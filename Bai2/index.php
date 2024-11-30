@@ -1,40 +1,70 @@
 <?php
-include 'db.php';  // Phạm Trung Hiếu
+include 'db.php';
 
 $stmt = $conn->query("SELECT * FROM questions");
 $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Bài kiểm tra trắc nghiệm</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .question h3 {
+            margin: 0 0 10px;
+        }
+        .answer {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Bài kiểm tra trắc nghiệm</h1>
-    <form action="submit.php" method="POST">
-        <?php foreach ($questions as $index => $question): ?>
-            <div class="card mb-4">
-                <div class="card-header"><strong>Câu <?= $index + 1 ?>: <?= $question['question'] ?></strong></div>
-                <div class="card-body">
-                    <?php foreach (['a', 'b', 'c', 'd'] as $option): ?>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="question_<?= $question['id'] ?>" value="<?= strtoupper($option) ?>" id="q<?= $question['id'] . $option ?>">
-                            <label class="form-check-label" for="q<?= $question['id'] . $option ?>">
-                                <?= $question["option_$option"] ?>
-                            </label>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endforeach; ?>
-        <button type="submit" class="btn btn-primary">Nộp bài</button>
-    </form>
-</div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<h1>Bài kiểm tra trắc nghiệm</h1>
+
+<?php
+$file_path = "Quiz.txt";
+if (file_exists($file_path)) {
+    $content = file_get_contents($file_path);
+    $questions = explode("ANSWER:", $content);
+
+    foreach ($questions as $key => $questionBlock) {
+        if (trim($questionBlock) == '') continue;
+        $parts = explode("\n", trim($questionBlock));
+        $questionText = array_shift($parts);
+        $answers = $parts;
+
+        echo "<div class='question'>";
+        echo "<h3>Câu " . ($key + 1) . ": $questionText</h3>";
+        foreach ($answers as $answer) {
+            if (stripos($answer, "ANSWER:") === false) {
+                echo "<div class='answer'><input type='radio' name='q$key'> $answer</div>";
+            }
+        }
+        echo "</div>";
+    }
+} else {
+    echo "<p>Không tìm thấy file Quiz.txt!</p>";
+}
+?>
+
 </body>
 </html>
